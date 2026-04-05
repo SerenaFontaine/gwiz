@@ -1,7 +1,9 @@
 # gwiz
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Go Reference](https://pkg.go.dev/badge/github.com/SerenaFontaine/gwiz.svg)](https://pkg.go.dev/github.com/SerenaFontaine/gwiz)
+[![Docs](https://img.shields.io/badge/docs-github_pages-2ea44f?logo=github)](https://serenafontaine.github.io/gwiz/)
+[![License](https://img.shields.io/github/license/SerenaFontaine/gwiz)](https://github.com/SerenaFontaine/gwiz/blob/main/LICENSE)
+[![Go Reference](https://img.shields.io/badge/go-reference-00ADD8?logo=go)](https://pkg.go.dev/github.com/SerenaFontaine/gwiz)
+[![Docs Deploy](https://img.shields.io/github/actions/workflow/status/SerenaFontaine/gwiz/docs-pages.yml?label=docs%20deploy)](https://github.com/SerenaFontaine/gwiz/actions/workflows/docs-pages.yml)
 
 A step-by-step terminal wizard framework for Go built on
 [tui](https://github.com/SerenaFontaine/tui).
