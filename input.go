@@ -1,10 +1,13 @@
 package gwiz
 
 import (
+	"unicode/utf8"
+
 	"github.com/SerenaFontaine/tui"
 )
 
 // InputStep collects a single line of text from the user.
+// cursorPos is a rune index (not a byte offset).
 type InputStep struct {
 	BaseStep
 	Prompt       string
@@ -14,17 +17,17 @@ type InputStep struct {
 	ValidateFunc func(value string) error
 
 	value     string
-	cursorPos int
+	cursorPos int // rune index
 }
 
 func (s *InputStep) Init(state State) Cmd {
 	s.value = s.Default
-	s.cursorPos = len(s.value)
+	s.cursorPos = utf8.RuneCountInString(s.value)
 
 	if v, ok := state.Get(s.ResultKey); ok {
 		if str, ok := v.(string); ok {
 			s.value = str
-			s.cursorPos = len(str)
+			s.cursorPos = utf8.RuneCountInString(str)
 		}
 	}
 	return nil
@@ -36,31 +39,36 @@ func (s *InputStep) Update(msg Msg, state State) (Step, Cmd) {
 		return s, nil
 	}
 
+	runes := []rune(s.value)
+
 	switch km.Type {
 	case tui.KeyRune:
-		s.value = s.value[:s.cursorPos] + string(km.Rune) + s.value[s.cursorPos:]
+		runes = append(runes[:s.cursorPos], append([]rune{km.Rune}, runes[s.cursorPos:]...)...)
+		s.value = string(runes)
 		s.cursorPos++
 	case tui.KeyBackspace:
 		if s.cursorPos > 0 {
-			s.value = s.value[:s.cursorPos-1] + s.value[s.cursorPos:]
+			runes = append(runes[:s.cursorPos-1], runes[s.cursorPos:]...)
+			s.value = string(runes)
 			s.cursorPos--
 		}
 	case tui.KeyDelete:
-		if s.cursorPos < len(s.value) {
-			s.value = s.value[:s.cursorPos] + s.value[s.cursorPos+1:]
+		if s.cursorPos < len(runes) {
+			runes = append(runes[:s.cursorPos], runes[s.cursorPos+1:]...)
+			s.value = string(runes)
 		}
 	case tui.KeyLeft:
 		if s.cursorPos > 0 {
 			s.cursorPos--
 		}
 	case tui.KeyRight:
-		if s.cursorPos < len(s.value) {
+		if s.cursorPos < len(runes) {
 			s.cursorPos++
 		}
 	case tui.KeyHome, tui.KeyCtrlA:
 		s.cursorPos = 0
 	case tui.KeyEnd, tui.KeyCtrlE:
-		s.cursorPos = len(s.value)
+		s.cursorPos = len(runes)
 	case tui.KeyEnter:
 		return s, tui.Batch(
 			func() Msg { return StepResultMsg{Key: s.ResultKey, Value: s.value} },
@@ -90,12 +98,13 @@ func (s *InputStep) Render(buf *tui.Buffer, area tui.Rect, state State) {
 		buf.SetString(area.X, y, s.Placeholder, tui.NewStyle().Dim(true))
 	} else {
 		buf.SetString(area.X, y, display, tui.NewStyle())
-		if s.cursorPos <= len(display) {
+		runes := []rune(display)
+		if s.cursorPos <= len(runes) {
 			cursorX := area.X + s.cursorPos
 			if cursorX < area.X+area.Width {
 				ch := ' '
-				if s.cursorPos < len(display) {
-					ch = rune(display[s.cursorPos])
+				if s.cursorPos < len(runes) {
+					ch = runes[s.cursorPos]
 				}
 				buf.SetChar(cursorX, y, ch, tui.NewStyle().Reverse(true))
 			}

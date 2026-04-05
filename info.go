@@ -2,6 +2,7 @@ package gwiz
 
 import (
 	"strings"
+	"unicode/utf8"
 
 	"github.com/SerenaFontaine/tui"
 )
@@ -114,9 +115,10 @@ func renderMarkupLine(buf *tui.Buffer, x, y, maxWidth int, line string) {
 			}
 		}
 
-		buf.SetChar(cx, y, rune(line[i]), style)
+		r, size := utf8.DecodeRuneInString(line[i:])
+		buf.SetChar(cx, y, r, style)
 		cx++
-		i++
+		i += size
 	}
 }
 

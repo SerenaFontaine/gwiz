@@ -2,6 +2,7 @@ package gwiz
 
 import (
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/SerenaFontaine/tui"
 )
@@ -15,12 +16,13 @@ type FormField struct {
 }
 
 // FormStep presents multiple labeled text fields on a single screen.
+// cursors stores rune indices (not byte offsets).
 type FormStep struct {
 	BaseStep
 	Fields []FormField
 
 	values   []string
-	cursors  []int
+	cursors  []int // rune indices
 	focusIdx int
 }
 
@@ -31,22 +33,30 @@ func (s *FormStep) Init(state State) Cmd {
 	for i, f := range s.Fields {
 		s.values[i] = f.Default
 		if v, ok := state.Get(f.Key); ok {
-			if str, ok := v.(string); ok { s.values[i] = str }
+			if str, ok := v.(string); ok {
+				s.values[i] = str
+			}
 		}
-		s.cursors[i] = len(s.values[i])
+		s.cursors[i] = utf8.RuneCountInString(s.values[i])
 	}
 	return nil
 }
 
 func (s *FormStep) Update(msg Msg, state State) (Step, Cmd) {
 	km, ok := msg.(tui.KeyMsg)
-	if !ok { return s, nil }
+	if !ok {
+		return s, nil
+	}
 
 	switch km.Type {
 	case tui.KeyTab:
-		if s.focusIdx < len(s.Fields)-1 { s.focusIdx++ }
+		if s.focusIdx < len(s.Fields)-1 {
+			s.focusIdx++
+		}
 	case tui.KeyBacktab:
-		if s.focusIdx > 0 { s.focusIdx-- }
+		if s.focusIdx > 0 {
+			s.focusIdx--
+		}
 	case tui.KeyEnter:
 		if s.focusIdx < len(s.Fields)-1 {
 			s.focusIdx++
@@ -64,18 +74,27 @@ func (s *FormStep) Update(msg Msg, state State) (Step, Cmd) {
 		return s, func() Msg { return PrevMsg{} }
 	case tui.KeyRune:
 		idx := s.focusIdx
-		s.values[idx] = s.values[idx][:s.cursors[idx]] + string(km.Rune) + s.values[idx][s.cursors[idx]:]
+		runes := []rune(s.values[idx])
+		runes = append(runes[:s.cursors[idx]], append([]rune{km.Rune}, runes[s.cursors[idx]:]...)...)
+		s.values[idx] = string(runes)
 		s.cursors[idx]++
 	case tui.KeyBackspace:
 		idx := s.focusIdx
 		if s.cursors[idx] > 0 {
-			s.values[idx] = s.values[idx][:s.cursors[idx]-1] + s.values[idx][s.cursors[idx]:]
+			runes := []rune(s.values[idx])
+			runes = append(runes[:s.cursors[idx]-1], runes[s.cursors[idx]:]...)
+			s.values[idx] = string(runes)
 			s.cursors[idx]--
 		}
 	case tui.KeyLeft:
-		if s.cursors[s.focusIdx] > 0 { s.cursors[s.focusIdx]-- }
+		if s.cursors[s.focusIdx] > 0 {
+			s.cursors[s.focusIdx]--
+		}
 	case tui.KeyRight:
-		if s.cursors[s.focusIdx] < len(s.values[s.focusIdx]) { s.cursors[s.focusIdx]++ }
+		runes := []rune(s.values[s.focusIdx])
+		if s.cursors[s.focusIdx] < len(runes) {
+			s.cursors[s.focusIdx]++
+		}
 	}
 	return s, nil
 }
@@ -95,10 +114,14 @@ func (s *FormStep) Render(buf *tui.Buffer, area tui.Rect, state State) {
 	y := area.Y
 	maxLabel := 0
 	for _, f := range s.Fields {
-		if len(f.Label) > maxLabel { maxLabel = len(f.Label) }
+		if len(f.Label) > maxLabel {
+			maxLabel = len(f.Label)
+		}
 	}
 	for i, f := range s.Fields {
-		if y >= area.Y+area.Height { break }
+		if y >= area.Y+area.Height {
+			break
+		}
 		labelStyle := tui.NewStyle().Dim(true)
 		inputStyle := tui.NewStyle()
 		if i == s.focusIdx {
@@ -111,10 +134,13 @@ func (s *FormStep) Render(buf *tui.Buffer, area tui.Rect, state State) {
 		val := s.values[i]
 		buf.SetString(valX, y, val, inputStyle)
 		if i == s.focusIdx {
+			runes := []rune(val)
 			cursorX := valX + s.cursors[i]
 			if cursorX < area.X+area.Width {
 				ch := ' '
-				if s.cursors[i] < len(val) { ch = rune(val[s.cursors[i]]) }
+				if s.cursors[i] < len(runes) {
+					ch = runes[s.cursors[i]]
+				}
 				buf.SetChar(cursorX, y, ch, tui.NewStyle().Reverse(true))
 			}
 		}
