@@ -111,8 +111,7 @@ func (w *Wizard) Update(msg Msg) (tui.Component, Cmd) {
 		return w, nil
 	default:
 		if w.current >= 0 && w.current < len(w.steps) {
-			step, cmd := w.steps[w.current].step.Update(msg, w.state)
-			w.steps[w.current].step = step
+			_, cmd := w.steps[w.current].step.Update(msg, w.state)
 			return w, cmd
 		}
 		return w, nil
@@ -130,8 +129,7 @@ func (w *Wizard) handleKey(msg tui.KeyMsg) (tui.Component, Cmd) {
 		}
 	}
 	if w.current >= 0 && w.current < len(w.steps) {
-		step, cmd := w.steps[w.current].step.Update(msg, w.state)
-		w.steps[w.current].step = step
+		_, cmd := w.steps[w.current].step.Update(msg, w.state)
 		return w, cmd
 	}
 	return w, nil

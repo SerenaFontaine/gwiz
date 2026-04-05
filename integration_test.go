@@ -47,10 +47,8 @@ func TestFullWizardFlow(t *testing.T) {
 	w.steps[w.current].step.Init(w.state)
 
 	// Select option B (down + enter)
-	step, _ := w.steps[w.current].step.Update(tui.KeyMsg{Type: tui.KeyDown}, w.state)
-	w.steps[w.current].step = step
-	step, cmd := w.steps[w.current].step.Update(tui.KeyMsg{Type: tui.KeyEnter}, w.state)
-	w.steps[w.current].step = step
+	w.steps[w.current].step.Update(tui.KeyMsg{Type: tui.KeyDown}, w.state)
+	_, cmd := w.steps[w.current].step.Update(tui.KeyMsg{Type: tui.KeyEnter}, w.state)
 
 	// Process the batch command
 	if cmd != nil {
