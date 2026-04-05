@@ -1,0 +1,3 @@
+[submodule "docs/themes/kokoro"]
+	path = docs/themes/kokoro
+	url = https://github.com/SerenaFontaine/kokoro.git

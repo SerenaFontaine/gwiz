@@ -1,0 +1,31 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output/coverage
+*.out
+*.coverprofile
+coverage.*
+profile.cov
+
+# Go workspace
+go.work
+go.work.sum
+
+# Environment
+.env
+
+# Hugo docs
+docs/public/
+docs/resources/
+docs/.hugo_build.lock
+
+# IDE
+# .idea/
+# .vscode/

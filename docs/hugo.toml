@@ -1,0 +1,15 @@
+baseURL = '/'
+title = 'gwiz'
+theme = 'kokoro'
+
+disableKinds = ['taxonomy']
+
+[outputs]
+home = ['HTML', 'RSS', 'JSON']
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[languages.en]
+  languageName = 'English'
+  weight = 1
