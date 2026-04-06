@@ -2,7 +2,7 @@ module github.com/SerenaFontaine/gwiz
 
 go 1.26.1
 
-require github.com/SerenaFontaine/tui v0.1.1
+require github.com/SerenaFontaine/tui v0.1.2
 
 require (
 	github.com/SerenaFontaine/kgp v0.1.0 // indirect

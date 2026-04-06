@@ -224,6 +224,11 @@ func (w *Wizard) Render(buf *tui.Buffer, area tui.Rect) {
 	step := w.steps[w.current].step
 	hints := defaultKeyHints(step)
 
+	// Suppress nav hints that don't apply at the boundaries.
+	isFirst := prevStep(w.current, w.steps, w.state) < 0
+	isLast := nextStep(w.current, w.steps, w.state) < 0
+	hints = filterHints(hints, isFirst, isLast)
+
 	contentArea := renderChrome(buf, area, w.title, w.banner, w.current, len(w.steps), hints, w.theme)
 
 	step.Render(buf, contentArea, w.state)
@@ -235,6 +240,25 @@ func (w *Wizard) Render(buf *tui.Buffer, area tui.Rect) {
 	if w.showQuitDialog {
 		renderQuitDialog(buf, area, w.quitDialog, w.theme)
 	}
+}
+
+// filterHints removes navigation hints that don't apply at wizard boundaries:
+// "Back" is suppressed on the first step, "Quit" on the last.
+func filterHints(hints []KeyHint, isFirst, isLast bool) []KeyHint {
+	if !isFirst && !isLast {
+		return hints
+	}
+	filtered := make([]KeyHint, 0, len(hints))
+	for _, h := range hints {
+		if isFirst && h.Label == "Back" {
+			continue
+		}
+		if isLast && h.Label == "Quit" {
+			continue
+		}
+		filtered = append(filtered, h)
+	}
+	return filtered
 }
 
 func defaultKeyHints(step Step) []KeyHint {
