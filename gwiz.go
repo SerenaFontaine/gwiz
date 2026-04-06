@@ -79,6 +79,16 @@ func (w *Wizard) Run(ctx context.Context) (*Result, error) {
 	}, nil
 }
 
+// Result returns the wizard's accumulated state and whether it was aborted.
+// Use this to retrieve results when driving the wizard via tui.NewApp
+// directly instead of Wizard.Run.
+func (w *Wizard) Result() *Result {
+	return &Result{
+		State:   w.state,
+		Aborted: w.aborted,
+	}
+}
+
 // Init implements tui.Component.
 func (w *Wizard) Init() Cmd {
 	w.current = firstStep(w.steps, w.state)
