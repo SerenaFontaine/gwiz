@@ -108,3 +108,24 @@ var ThemeMonochrome = Theme{
 	Error:      tui.White,
 	Info:       tui.White,
 }
+
+// TUITheme converts the wizard theme to a tui.Theme for use with tui.WithTheme.
+// This ensures placeholder rendering for non-KGP terminals uses matching colors.
+func (t Theme) TUITheme() tui.Theme {
+	return tui.Theme{
+		Primary:          t.Primary,
+		Secondary:        t.Secondary,
+		Background:       t.Background,
+		Surface:          t.Surface,
+		SurfaceHighlight: t.Surface,
+		TextPrimary:      t.Text,
+		TextSecondary:    t.Text,
+		TextMuted:        t.TextDim,
+		Success:          t.Success,
+		Warning:          t.Warning,
+		Error:            t.Error,
+		Info:             t.Info,
+		BorderColor:      t.TextDim,
+		BorderFocusColor: t.Primary,
+	}
+}

@@ -67,7 +67,7 @@ func (w *Wizard) AddStep(name string, step Step) {
 // completes or aborts. It returns the accumulated state and whether the wizard
 // was aborted.
 func (w *Wizard) Run(ctx context.Context) (*Result, error) {
-	app := tui.NewApp(w, tui.WithAltScreen(true))
+	app := tui.NewApp(w, tui.WithAltScreen(true), tui.WithTheme(w.theme.TUITheme()))
 	w.app = app
 	err := app.Run()
 	if err != nil {
