@@ -23,7 +23,8 @@ type Wizard struct {
 
 	err error
 
-	app *tui.App
+	app     *tui.App
+	tuiOpts []tui.Option
 }
 
 type quitDialogState struct {
@@ -57,6 +58,13 @@ func WithBanner(banner string) WizardOption {
 	return func(w *Wizard) { w.banner = banner }
 }
 
+// WithTUIOptions passes additional tui.Option values to the underlying
+// tui.App created by Run. This allows callers to set terminal capabilities,
+// custom I/O, or other tui-level configuration.
+func WithTUIOptions(opts ...tui.Option) WizardOption {
+	return func(w *Wizard) { w.tuiOpts = append(w.tuiOpts, opts...) }
+}
+
 // AddStep registers a named step in the wizard. Steps are presented in the
 // order they are added.
 func (w *Wizard) AddStep(name string, step Step) {
@@ -67,7 +75,8 @@ func (w *Wizard) AddStep(name string, step Step) {
 // completes or aborts. It returns the accumulated state and whether the wizard
 // was aborted.
 func (w *Wizard) Run(ctx context.Context) (*Result, error) {
-	app := tui.NewApp(w, tui.WithAltScreen(true), tui.WithTheme(w.theme.TUITheme()))
+	opts := append([]tui.Option{tui.WithAltScreen(true), tui.WithTheme(w.theme.TUITheme())}, w.tuiOpts...)
+	app := tui.NewApp(w, opts...)
 	w.app = app
 	err := app.Run()
 	if err != nil {
